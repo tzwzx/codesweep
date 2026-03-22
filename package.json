@@ -1,0 +1,65 @@
+{
+  "name": "codesweep",
+  "version": "0.1.0",
+  "description": "Run code quality checks in one command 🧹",
+  "keywords": [
+    "cli",
+    "code-quality",
+    "formatter",
+    "linter",
+    "orchestrator",
+    "test-runner",
+    "typecheck"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tazawa/codesweep.git"
+  },
+  "bin": {
+    "codesweep": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "oxfmt --check . && oxlint .",
+    "fix": "oxfmt --write . && oxlint --fix .",
+    "tsc": "tsc --noEmit",
+    "knip": "knip",
+    "syncpack": "syncpack lint",
+    "test": "bun test",
+    "codesweep:check": "node dist/cli.js check",
+    "codesweep:fix": "node dist/cli.js fix"
+  },
+  "dependencies": {
+    "concurrently": "9.2.1",
+    "yaml": "2.8.3"
+  },
+  "devDependencies": {
+    "@types/node": "25.5.0",
+    "knip": "6.0.1",
+    "oxfmt": "0.41.0",
+    "oxlint": "1.56.0",
+    "syncpack": "14.2.1",
+    "typescript": "5.9.3",
+    "ultracite": "7.3.2"
+  },
+  "engines": {
+    "bun": ">=1",
+    "node": ">=18"
+  }
+}

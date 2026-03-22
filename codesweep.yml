@@ -1,0 +1,16 @@
+check:
+  - parallel:
+      - bun lint
+      - bun tsc
+      - bun knip
+      - bun syncpack
+      - bun test
+
+fix:
+  - sequential:
+      - bun fix
+  - parallel:
+      - bun tsc
+      - bun knip
+      - bun syncpack
+      - bun test

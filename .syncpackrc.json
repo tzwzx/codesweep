@@ -1,0 +1,11 @@
+{
+  "$schema": "./node_modules/syncpack/schema.json",
+  "semverGroups": [
+    {
+      "label": "All dependencies must use exact versions",
+      "dependencies": ["**"],
+      "dependencyTypes": ["prod", "dev"],
+      "range": ""
+    }
+  ]
+}
