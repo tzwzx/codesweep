@@ -94,7 +94,7 @@ fix:
     await codesweep("fix", path);
 
     const logCalls = consoleLogSpy.mock.calls.flat().join(" ");
-    expect(logCalls).toMatch(/\d+\.\d+s/);
+    expect(logCalls).toMatch(/\d+\.\d+s/u);
     rmSync(path, { recursive: true });
   });
 });

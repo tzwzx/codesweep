@@ -11,6 +11,7 @@
  *   codesweep check --config ./custom.yml # Use custom config file
  */
 import process from "node:process";
+import { parseArgs } from "node:util";
 import { codesweep } from "./index.js";
 const HELP_TEXT = `
 codesweep - Run code quality checks in one command 🧹
@@ -25,39 +26,34 @@ Options:
   --config, -c <path>   Path to config file (default: ./codesweep.yml)
   --help, -h            Show help
 `;
-const parseArgs = (argv) => {
-    const args = argv.slice(2);
-    let mode;
-    let configPath;
-    for (let i = 0; i < args.length; i += 1) {
-        const arg = args[i];
-        if (arg === "--config" || arg === "-c") {
-            configPath = args[i + 1];
-            if (!configPath) {
-                console.error("❌ --config requires a file path");
-                process.exit(1);
-            }
-            // Skip next argument
-            i += 1;
-        }
-        else if (arg === "--help" || arg === "-h") {
-            console.log(HELP_TEXT);
-            process.exit(0);
-        }
-        else if (!arg.startsWith("-")) {
-            mode = arg;
-        }
-    }
-    return { configPath, mode };
-};
 const main = async () => {
-    const { mode, configPath } = parseArgs(process.argv);
+    let values;
+    let positionals;
+    try {
+        ({ values, positionals } = parseArgs({
+            allowPositionals: true,
+            args: process.argv.slice(2),
+            options: {
+                config: { short: "c", type: "string" },
+                help: { short: "h", type: "boolean" },
+            },
+        }));
+    }
+    catch (error) {
+        console.error(error instanceof Error ? error.message : String(error));
+        process.exit(1);
+    }
+    if (values.help) {
+        console.log(HELP_TEXT);
+        process.exit(0);
+    }
+    const [mode] = positionals;
     if (!mode) {
         console.log(HELP_TEXT);
         process.exit(1);
     }
     try {
-        await codesweep(mode, configPath);
+        await codesweep(mode, values.config);
         process.exit(0);
     }
     catch (error) {

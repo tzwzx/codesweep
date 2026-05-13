@@ -79,7 +79,7 @@ export const loadConfig = (configPath?: string): CodesweepConfig => {
 
   let content: string;
   try {
-    content = readFileSync(resolvedPath, "utf8");
+    content = readFileSync(resolvedPath, "utf-8");
   } catch {
     throw new Error(`Config file not found: ${resolvedPath}`);
   }

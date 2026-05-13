@@ -5,7 +5,6 @@ import { exec } from "node:child_process";
 import { promisify } from "node:util";
 import concurrently from "concurrently";
 const execPromise = promisify(exec);
-/** Print stdout/stderr from a command */
 const printCommandOutput = (stdout, stderr) => {
     if (stdout) {
         console.log(stdout);
@@ -14,13 +13,13 @@ const printCommandOutput = (stdout, stderr) => {
         console.error(stderr);
     }
 };
-/** Run a single command */
 const runSingleCommand = async (command) => {
     const { stdout, stderr } = await execPromise(command);
     printCommandOutput(stdout, stderr);
 };
 /**
- * Run commands sequentially (continues on failure)
+ * Run commands sequentially (continues on failure).
+ * All commands run even if one fails; errors are collected and thrown at the end.
  */
 export const runSequential = async (commands) => {
     const errors = [];
@@ -29,10 +28,11 @@ export const runSequential = async (commands) => {
             await runSingleCommand(command);
         }
         catch (error) {
-            const execError = error;
+            const { stdout, stderr } = error;
+            const message = error instanceof Error ? error.message : String(error);
             console.error(`❌ Command failed: ${command}`);
-            printCommandOutput(execError.stdout, execError.stderr);
-            errors.push({ command, message: execError.message });
+            printCommandOutput(stdout, stderr);
+            errors.push({ command, message });
         }
     }
     if (errors.length > 0) {
@@ -41,7 +41,8 @@ export const runSequential = async (commands) => {
     }
 };
 /**
- * Run commands in parallel (continues on failure)
+ * Run commands in parallel (continues on failure).
+ * All commands run even if one fails; the error is thrown after all complete.
  */
 export const runParallel = async (commands) => {
     const commandObjects = commands.map((command) => ({ command }));
@@ -54,8 +55,8 @@ export const runParallel = async (commands) => {
         await result;
     }
     catch (error) {
-        const failures = error?.message || "Unknown error";
-        throw new Error(`Parallel execution failed: ${failures}`, { cause: error });
+        const message = error instanceof Error ? error.message : "Unknown error";
+        throw new Error(`Parallel execution failed: ${message}`, { cause: error });
     }
 };
 //# sourceMappingURL=runner.js.map

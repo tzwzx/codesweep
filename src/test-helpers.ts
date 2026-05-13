@@ -6,6 +6,6 @@ import { join } from "node:path";
 export const createTempConfig = (content: string, prefix = "codesweep-test-"): string => {
   const dir = mkdtempSync(join(tmpdir(), prefix));
   const filePath = join(dir, "codesweep.yml");
-  writeFileSync(filePath, content, "utf8");
+  writeFileSync(filePath, content, "utf-8");
   return filePath;
 };

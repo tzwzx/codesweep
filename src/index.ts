@@ -6,7 +6,7 @@ import { performance } from "node:perf_hooks";
 
 import { isParallelStage, loadConfig } from "./config.js";
 import { runParallel, runSequential } from "./runner.js";
-import type { Stage, CodesweepConfig, Mode } from "./types.js";
+import type { Stage, Mode } from "./types.js";
 
 export type { CodesweepConfig, Stage, ParallelStage, SequentialStage, Mode } from "./types.js";
 export { isParallelStage, isSequentialStage, loadConfig } from "./config.js";
