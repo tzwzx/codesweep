@@ -1,3 +1,6 @@
 node_modules/
 *.tgz
 .DS_Store
+
+# Transient agent worktree checkouts
+.claude/worktrees/

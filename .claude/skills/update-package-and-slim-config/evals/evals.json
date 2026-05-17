@@ -1,0 +1,50 @@
+{
+  "skill_name": "update-package-and-slim-config",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "codesweep のパッケージを全部最新バージョンに更新して。更新したライブラリのリリースノートを確認して破壊的変更があれば教えて。あと設定ファイルに冗長な記述が残ってたら整理しといて。",
+      "expected_output": "全 npm 依存が ncu で最新化され、git diff package.json で変更が確認される。更新パッケージのリリースノートが調査され、破壊的変更・新機能・その他更新が表形式でレポートされる。dependencies(concurrently/yaml)の不具合リスク評価が含まれる。設定ファイル5つが分析され、冗長な記述は削除、なければ『変更なし』と報告。最後に bun run build && bun codesweep:fix で検証されパスする。全フェーズの結果が1つのリフレッシュレポートにまとまる。",
+      "files": [],
+      "expectations": [
+        "package.json の npm 依存が最新バージョンへ更新されている（package-json.diff にバージョン変更がある）。更新可能なパッケージが存在しなかった場合は report.md にその旨が明記されている。",
+        "更新後も package.json の全依存が exact バージョンを維持しており、^ や ~ などのレンジ指定が混入していない。",
+        "report.md に、更新された各パッケージの変更内容（破壊的変更・新機能・その他の更新）がリリースノート調査に基づいて区別して記載されている。",
+        "report.md が dependencies（concurrently / yaml）の不具合リスクに、devDependencies と区別したうえで言及している（更新があればリスクレベル付き評価、更新がなければ変更なしの明記）。",
+        "設定ファイル（oxfmt.config.ts / oxlint.config.ts / knip.json / .syncpackrc.json / tsconfig.json）のスリム化が検討され、冗長設定の削除または『変更なし』が根拠付きで report.md に記載されている。",
+        "検証として bun run build が実行され dist/ が再ビルドされている（verification.txt に bun run build の実行記録がある）。",
+        "bun codesweep:fix 相当のチェック（tsc / knip / syncpack / test 等）が実行され、verification.txt 上で最終的に全てパスしている。"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "依存関係をしばらく更新してないから、最新に上げてプロジェクトをリフレッシュしたい。",
+      "expected_output": "更新を主眼にした短い依頼でも、5フェーズすべてが実行される。パッケージ更新・リリースノート確認・リスク評価に加え、明示的に頼まれていない設定ファイルのスリム化(Phase 4)とビルド+codesweep検証(Phase 5)も実施され、リフレッシュレポートにまとまる。",
+      "files": [],
+      "expectations": [
+        "package.json の npm 依存が最新バージョンへ更新されている（package-json.diff にバージョン変更がある）。更新可能なパッケージが存在しなかった場合は report.md にその旨が明記されている。",
+        "更新後も package.json の全依存が exact バージョンを維持しており、^ や ~ などのレンジ指定が混入していない。",
+        "report.md に、更新された各パッケージの変更内容（破壊的変更・新機能・その他の更新）がリリースノート調査に基づいて区別して記載されている。",
+        "report.md が dependencies（concurrently / yaml）の不具合リスクに、devDependencies と区別したうえで言及している（更新があればリスクレベル付き評価、更新がなければ変更なしの明記）。",
+        "明示的に頼まれていないが、設定ファイル（oxfmt.config.ts / oxlint.config.ts / knip.json / .syncpackrc.json / tsconfig.json）のスリム化が検討され、冗長設定の削除または『変更なし』が根拠付きで report.md に記載されている。",
+        "検証として bun run build が実行され dist/ が再ビルドされている（verification.txt に bun run build の実行記録がある）。",
+        "bun codesweep:fix 相当のチェック（tsc / knip / syncpack / test 等）が実行され、verification.txt 上で最終的に全てパスしている。"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "ライブラリ更新したついでに、oxfmt や oxlint や tsconfig あたりの設定で、もう要らなくなった記述がないかチェックして消しといて。",
+      "expected_output": "設定スリム化を主眼にした依頼でも、まず Phase 1 のパッケージ更新が先に実行される(ultracite 更新で extends 元が変わるため、スリム化はその後でないと正確に判定できない)。oxfmt/oxlint の extends 元(ultracite)と tsconfig のデフォルト値が node_modules から調査され、冗長設定は根拠付きで削除、推測削除はしない。最後に検証されパスする。",
+      "files": [],
+      "expectations": [
+        "設定整理を主眼にした依頼でも、先に package.json の npm 依存が最新バージョンへ更新されている（package-json.diff にバージョン変更がある）。更新可能なパッケージが存在しなかった場合は report.md にその旨が明記されている。",
+        "更新後も package.json の全依存が exact バージョンを維持しており、^ や ~ などのレンジ指定が混入していない。",
+        "report.md に、更新された各パッケージの変更内容（破壊的変更・新機能・その他の更新）がリリースノート調査に基づいて区別して記載されている。",
+        "report.md が dependencies（concurrently / yaml）の不具合リスクに、devDependencies と区別したうえで言及している（更新があればリスクレベル付き評価、更新がなければ変更なしの明記）。",
+        "設定ファイル（oxfmt.config.ts / oxlint.config.ts / knip.json / .syncpackrc.json / tsconfig.json）のスリム化が、各ツールのデフォルト値や extends 元（ultracite）を node_modules から確認したうえで行われ、削除は根拠付き・推測削除なしで report.md に記載されている。",
+        "検証として bun run build が実行され dist/ が再ビルドされている（verification.txt に bun run build の実行記録がある）。",
+        "bun codesweep:fix 相当のチェック（tsc / knip / syncpack / test 等）が実行され、verification.txt 上で最終的に全てパスしている。"
+      ]
+    }
+  ]
+}
