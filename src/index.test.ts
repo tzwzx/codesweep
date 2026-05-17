@@ -1,8 +1,12 @@
-import { afterEach, beforeEach, describe, expect, spyOn, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, setDefaultTimeout, spyOn, test } from "bun:test";
 import { rmSync } from "node:fs";
 
 import { codesweep } from "./index.js";
 import { createTempConfig } from "./test-helpers.js";
+
+// codesweep() spawns real OS subprocesses; raise the timeout above Bun's
+// 5000ms default so a slow process spawn under heavy load does not flake.
+setDefaultTimeout(20_000);
 
 describe("codesweep", () => {
   let consoleLogSpy: ReturnType<typeof spyOn>;

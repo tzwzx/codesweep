@@ -1,8 +1,12 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { rmSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { createTempConfig } from "./test-helpers.js";
+
+// Each case spawns a full bun subprocess; raise the timeout above Bun's
+// 5000ms default so a slow process spawn under heavy load does not flake.
+setDefaultTimeout(20_000);
 
 const CLI_PATH = resolve(import.meta.dirname, "cli.ts");
 
