@@ -32,6 +32,8 @@ export const runSequential = async (commands: readonly string[]): Promise<void> 
 
   for (const command of commands) {
     try {
+      // Commands run one-by-one by design (sequential stage); parallelizing would defeat the purpose.
+      // oxlint-disable-next-line no-await-in-loop
       await runSingleCommand(command);
     } catch (error) {
       const { stdout, stderr } = error as { stdout?: string; stderr?: string };

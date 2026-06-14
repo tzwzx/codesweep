@@ -7,7 +7,7 @@ CLI tool for running code quality checks in one command. Customizable per projec
 - **Purpose**: Run lint, format, typecheck, test, and other code quality commands in one go
 - **Use cases**: Post-task checks for AI coding agents, pre-commit checks, CI pipelines
 - **Distribution**: npm package / Git URL dependency
-- **Runtime**: Node.js >= 18 / Bun compatible
+- **Runtime**: Node.js >= 22 / Bun compatible
 
 ## Development Commands
 

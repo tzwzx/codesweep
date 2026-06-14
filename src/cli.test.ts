@@ -1,6 +1,6 @@
 import { describe, expect, setDefaultTimeout, test } from "bun:test";
 import { rmSync } from "node:fs";
-import { resolve } from "node:path";
+import nodePath from "node:path";
 
 import { createTempConfig } from "./test-helpers.js";
 
@@ -8,7 +8,7 @@ import { createTempConfig } from "./test-helpers.js";
 // 5000ms default so a slow process spawn under heavy load does not flake.
 setDefaultTimeout(20_000);
 
-const CLI_PATH = resolve(import.meta.dirname, "cli.ts");
+const CLI_PATH = nodePath.resolve(import.meta.dirname, "cli.ts");
 
 /** Run the CLI as a subprocess and capture output */
 const runCli = async (

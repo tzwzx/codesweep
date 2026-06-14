@@ -2,7 +2,7 @@
  * codesweep - YAML config loading and validation
  */
 import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import path from "node:path";
 import { parse } from "yaml";
 const DEFAULT_CONFIG_FILENAME = "codesweep.yml";
 export const isParallelStage = (stage) => "parallel" in stage;
@@ -52,8 +52,8 @@ const validateConfig = (config) => {
 };
 export const loadConfig = (configPath) => {
     const resolvedPath = configPath
-        ? resolve(configPath)
-        : resolve(process.cwd(), DEFAULT_CONFIG_FILENAME);
+        ? path.resolve(configPath)
+        : path.resolve(process.cwd(), DEFAULT_CONFIG_FILENAME);
     let content;
     try {
         content = readFileSync(resolvedPath, "utf-8");

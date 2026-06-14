@@ -22,6 +22,8 @@ const runStage = (stage: Stage): Promise<void> =>
 
 const runPipeline = async (stages: readonly Stage[]): Promise<void> => {
   for (const stage of stages) {
+    // Stages run serially by design ("serial between stages"); parallelizing would break the contract.
+    // oxlint-disable-next-line no-await-in-loop
     await runStage(stage);
   }
 };

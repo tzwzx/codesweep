@@ -11,6 +11,8 @@ const formatDuration = (startTime) => ((performance.now() - startTime) / MILLISE
 const runStage = (stage) => isParallelStage(stage) ? runParallel(stage.parallel) : runSequential(stage.sequential);
 const runPipeline = async (stages) => {
     for (const stage of stages) {
+        // Stages run serially by design ("serial between stages"); parallelizing would break the contract.
+        // oxlint-disable-next-line no-await-in-loop
         await runStage(stage);
     }
 };

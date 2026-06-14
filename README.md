@@ -4,7 +4,7 @@ Run lint, format, typecheck, test, and other code quality commands in one go. Co
 
 ## Requirements
 
-- Node.js >= 18 (or Bun >= 1)
+- Node.js >= 22 (or Bun >= 1)
 
 ## Install from Git
 

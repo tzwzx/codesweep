@@ -3,7 +3,7 @@
  */
 
 import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import path from "node:path";
 
 import { parse } from "yaml";
 
@@ -74,8 +74,8 @@ const validateConfig = (config: unknown): CodesweepConfig => {
 
 export const loadConfig = (configPath?: string): CodesweepConfig => {
   const resolvedPath = configPath
-    ? resolve(configPath)
-    : resolve(process.cwd(), DEFAULT_CONFIG_FILENAME);
+    ? path.resolve(configPath)
+    : path.resolve(process.cwd(), DEFAULT_CONFIG_FILENAME);
 
   let content: string;
   try {
