@@ -97,6 +97,10 @@ bun run build   # outputs to dist/
 bun run dev     # tsc --watch
 ```
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md).
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
