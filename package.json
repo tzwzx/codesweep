@@ -1,0 +1,74 @@
+{
+  "name": "@tzwzx/codesweep",
+  "version": "1.0.0",
+  "description": "Run code quality checks in one command 🧹",
+  "keywords": [
+    "cli",
+    "code-quality",
+    "formatter",
+    "linter",
+    "orchestrator",
+    "test-runner",
+    "typecheck"
+  ],
+  "homepage": "https://github.com/tzwzx/codesweep#readme",
+  "bugs": {
+    "url": "https://github.com/tzwzx/codesweep/issues"
+  },
+  "license": "MIT",
+  "author": "tzwzx",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tzwzx/codesweep.git"
+  },
+  "bin": {
+    "codesweep": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "oxfmt --check . && oxlint .",
+    "fix": "oxfmt --write . && oxlint --fix .",
+    "tsc": "tsc --noEmit",
+    "knip": "knip",
+    "syncpack": "syncpack lint",
+    "test": "bun test",
+    "codesweep:check": "node dist/cli.js check",
+    "codesweep:fix": "node dist/cli.js fix",
+    "prepublishOnly": "bun run build"
+  },
+  "dependencies": {
+    "concurrently": "10.0.3",
+    "yaml": "2.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "26.0.1",
+    "knip": "6.23.0",
+    "oxfmt": "0.57.0",
+    "oxlint": "1.72.0",
+    "syncpack": "15.3.2",
+    "typescript": "6.0.3",
+    "ultracite": "7.8.3"
+  },
+  "engines": {
+    "bun": ">=1",
+    "node": ">=22"
+  }
+}
