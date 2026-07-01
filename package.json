@@ -59,7 +59,7 @@
     "yaml": "2.9.0"
   },
   "devDependencies": {
-    "@types/node": "26.0.1",
+    "@types/node": "26.1.0",
     "knip": "6.23.0",
     "oxfmt": "0.57.0",
     "oxlint": "1.72.0",
