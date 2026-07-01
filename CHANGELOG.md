@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-07-01
+
+### Changed
+
+- Maintenance release with no user-facing changes: refreshed dev dependencies and simplified the lint/format/knip ignore configuration. Runtime behavior is unchanged.
+
 ## [1.0.0] - 2026-07-01
 
 ### Added
@@ -17,5 +23,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `--config` / `-c` option to point at a custom config file, and `--help` / `-h`.
 - Library API: `codesweep`, `loadConfig`, `runParallel`, `runSequential`, and the `isParallelStage` / `isSequentialStage` type guards.
 
-[Unreleased]: https://github.com/tzwzx/codesweep/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/tzwzx/codesweep/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/tzwzx/codesweep/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/tzwzx/codesweep/releases/tag/v1.0.0
