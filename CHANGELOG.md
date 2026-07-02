@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-02
+
+### Added
+
+- `codesweep init` subcommand that generates a starter `codesweep.yml` in the current directory. `init` is a reserved subcommand and cannot be used as a mode name.
+
+### Changed
+
+- Improved README: added a "Why codesweep?" section, one-step usage via `npx` / `bunx`, and a slimmer library usage section.
+
 ## [1.0.1] - 2026-07-01
 
 ### Changed
@@ -23,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `--config` / `-c` option to point at a custom config file, and `--help` / `-h`.
 - Library API: `codesweep`, `loadConfig`, `runParallel`, `runSequential`, and the `isParallelStage` / `isSequentialStage` type guards.
 
-[Unreleased]: https://github.com/tzwzx/codesweep/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/tzwzx/codesweep/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/tzwzx/codesweep/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/tzwzx/codesweep/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/tzwzx/codesweep/releases/tag/v1.0.0
