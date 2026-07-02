@@ -56,14 +56,7 @@ Exit code `0` on success, `1` on failure. Elapsed time is printed when the run f
 
 ## Library usage
 
-```ts
-import { codesweep } from "@tzwzx/codesweep";
-
-await codesweep("check");
-await codesweep("fix", "./custom.yml");
-```
-
-You can also import helpers such as `initConfig`, `loadConfig`, `runParallel`, and `runSequential` from the same package.
+codesweep can also be called programmatically: `import { codesweep } from "@tzwzx/codesweep"` and `await codesweep("check")` (optionally passing a config path as the second argument).
 
 ## Config: `codesweep.yml`
 
