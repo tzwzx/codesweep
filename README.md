@@ -67,7 +67,7 @@ You can also import helpers such as `initConfig`, `loadConfig`, `runParallel`, a
 
 ## Config: `codesweep.yml`
 
-Run `codesweep init` to generate a starter `codesweep.yml` in the current directory (fails if the file already exists):
+Run `codesweep init` to generate a starter `codesweep.yml` in the current directory (fails if the file already exists). This also works without installing first — `npx @tzwzx/codesweep init` (or `bunx @tzwzx/codesweep init`) downloads and runs it in one step:
 
 ```yaml
 # codesweep configuration
