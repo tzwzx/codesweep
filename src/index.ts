@@ -6,6 +6,7 @@ import type { Stage, Mode } from "./types.js";
 
 export type { CodesweepConfig, Stage, ParallelStage, SequentialStage, Mode } from "./types.js";
 export { isParallelStage, isSequentialStage, loadConfig } from "./config.js";
+export { initConfig } from "./init.js";
 export { runParallel, runSequential } from "./runner.js";
 
 const MILLISECONDS_PER_SECOND = 1000;

@@ -1,5 +1,6 @@
 import { describe, expect, setDefaultTimeout, test } from "bun:test";
-import { rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import nodePath from "node:path";
 
 import { createTempConfig } from "./test-helpers.js";
@@ -13,8 +14,10 @@ const CLI_PATH = nodePath.resolve(import.meta.dirname, "cli.ts");
 /** Run the CLI as a subprocess and capture output */
 const runCli = async (
   args: string[],
+  cwd?: string,
 ): Promise<{ stdout: string; stderr: string; exitCode: number }> => {
   const proc = Bun.spawn(["bun", "run", CLI_PATH, ...args], {
+    cwd,
     stderr: "pipe",
     stdout: "pipe",
   });
@@ -146,5 +149,59 @@ check:
     const result = await runCli(["check", "-c", path]);
     expect(result.exitCode).toBe(1);
     rmSync(path, { recursive: true });
+  });
+
+  // --- init subcommand ---
+
+  test("init creates codesweep.yml in the current directory", async () => {
+    const dir = mkdtempSync(nodePath.join(tmpdir(), "codesweep-cli-init-"));
+    const result = await runCli(["init"], dir);
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("Created");
+    expect(readFileSync(nodePath.join(dir, "codesweep.yml"), "utf-8")).toContain("check:");
+    rmSync(dir, { recursive: true });
+  });
+
+  test("init creates a config file at the path given by --config", async () => {
+    const dir = mkdtempSync(nodePath.join(tmpdir(), "codesweep-cli-init-"));
+    const target = nodePath.join(dir, "custom.yml");
+    const result = await runCli(["init", "--config", target]);
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain(target);
+    expect(readFileSync(target, "utf-8")).toContain("fix:");
+    rmSync(dir, { recursive: true });
+  });
+
+  test("init fails when the config file already exists", async () => {
+    const path = createTempConfig(`
+check:
+  - sequential:
+      - echo ok
+`);
+    const result = await runCli(["init", "-c", path]);
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toContain("Config file already exists");
+    rmSync(path, { recursive: true });
+  });
+
+  test("init is reserved even when the config defines an init mode", async () => {
+    const path = createTempConfig(`
+init:
+  - sequential:
+      - echo should not run
+`);
+    const result = await runCli(["init", "-c", path]);
+    // The subcommand takes precedence, so it reports the existing file
+    // instead of running the user-defined "init" mode.
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toContain("Config file already exists");
+    expect(result.stdout).not.toContain("should not run");
+    rmSync(path, { recursive: true });
+  });
+
+  test("--help mentions the init subcommand", async () => {
+    const result = await runCli(["--help"]);
+    expect(result.stdout).toContain("Create a starter codesweep.yml");
+    expect(result.exitCode).toBe(0);
   });
 });

@@ -27,9 +27,10 @@ After install, the `codesweep` binary is available via `npx @tzwzx/codesweep`, `
 ## CLI usage
 
 ```bash
-codesweep <mode> [options]
+codesweep <command> [options]
 ```
 
+- **`init`** — Create a starter `codesweep.yml` in the current directory. Reserved as a subcommand; see note below.
 - **mode** — Any mode defined in `codesweep.yml` (for example `check` or `fix`).
 - **`--config` / `-c <path>`** — Path to the config file (default: `./codesweep.yml`).
 - **`--help` / `-h`** — Show help.
@@ -37,6 +38,7 @@ codesweep <mode> [options]
 Examples:
 
 ```bash
+codesweep init
 codesweep check
 codesweep fix
 codesweep check --config ./packages/app/codesweep.yml
@@ -53,28 +55,31 @@ await codesweep("check");
 await codesweep("fix", "./custom.yml");
 ```
 
-You can also import helpers such as `loadConfig`, `runParallel`, and `runSequential` from the same package.
+You can also import helpers such as `initConfig`, `loadConfig`, `runParallel`, and `runSequential` from the same package.
 
 ## Config: `codesweep.yml`
 
-Define one or more **modes**. Each mode is an ordered list of **stages**. Each stage is either `parallel` or `sequential`, and holds a non-empty array of shell command strings.
-
-Example:
+Run `codesweep init` to generate a starter `codesweep.yml` in the current directory (fails if the file already exists):
 
 ```yaml
+# codesweep configuration
+# https://github.com/tzwzx/codesweep
+
 check:
-  - parallel:
-      - bun lint
-      - bun tsc
-      - bun test
+  - parallel: # Stage 1: run checks in parallel
+      - npm run lint
+      - npm run typecheck
+      - npm test
 
 fix:
-  - sequential:
-      - bun fix
-  - parallel:
-      - bun tsc
-      - bun test
+  - sequential: # Stage 1: apply auto-fixes
+      - npm run fix
+  - parallel: # Stage 2: verify after fixing
+      - npm run typecheck
+      - npm test
 ```
+
+Define one or more **modes**. Each mode is an ordered list of **stages**. Each stage is either `parallel` or `sequential`, and holds a non-empty array of shell command strings. Mode names are arbitrary — note: `"init"` is reserved as a subcommand and cannot be used as a mode name.
 
 ### Behavior
 

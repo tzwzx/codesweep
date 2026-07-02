@@ -68,10 +68,11 @@ const validateConfig = (config: unknown): CodesweepConfig => {
   return record as CodesweepConfig;
 };
 
+export const resolveConfigPath = (configPath?: string): string =>
+  configPath ? path.resolve(configPath) : path.resolve(process.cwd(), DEFAULT_CONFIG_FILENAME);
+
 export const loadConfig = (configPath?: string): CodesweepConfig => {
-  const resolvedPath = configPath
-    ? path.resolve(configPath)
-    : path.resolve(process.cwd(), DEFAULT_CONFIG_FILENAME);
+  const resolvedPath = resolveConfigPath(configPath);
 
   let content: string;
   try {

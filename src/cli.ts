@@ -4,9 +4,10 @@
  * codesweep CLI - Run code quality checks in one command
  *
  * Usage:
- *   codesweep <mode> [--config path]
+ *   codesweep <command> [--config path]
  *
  * Examples:
+ *   codesweep init                        # Create a starter codesweep.yml
  *   codesweep check                       # Run quality checks
  *   codesweep fix                         # Auto-fix then check
  *   codesweep check --config ./custom.yml # Use custom config file
@@ -16,15 +17,18 @@ import process from "node:process";
 import { parseArgs } from "node:util";
 
 import { codesweep } from "./index.js";
+import { initConfig } from "./init.js";
 
 const HELP_TEXT = `
 codesweep - Run code quality checks in one command 🧹
 
 Usage:
-  codesweep <mode> [options]
+  codesweep <command> [options]
 
-Modes:
-  Any mode defined in your codesweep.yml (e.g. check, fix, ...)
+Commands:
+  init                  Create a starter codesweep.yml config file
+  <mode>                Run a mode defined in your codesweep.yml (e.g. check, fix)
+                        Note: "init" is reserved and cannot be used as a mode name
 
 Options:
   --config, -c <path>   Path to config file (default: ./codesweep.yml)
@@ -62,7 +66,13 @@ const main = async (): Promise<void> => {
   }
 
   try {
-    await codesweep(mode, values.config);
+    if (mode === "init") {
+      // "init" is a reserved subcommand and never runs a user-defined mode.
+      const createdPath = initConfig(values.config);
+      console.log(`Created ${createdPath}`);
+    } else {
+      await codesweep(mode, values.config);
+    }
     process.exit(0);
   } catch (error) {
     if (error instanceof Error) {
