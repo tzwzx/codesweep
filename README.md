@@ -5,6 +5,14 @@
 
 Run lint, format, typecheck, test, and other code quality commands in one go. Configure each project with a YAML file.
 
+## Why codesweep?
+
+Task runners like [concurrently](https://www.npmjs.com/package/concurrently) and [npm-run-all2](https://www.npmjs.com/package/npm-run-all2) are great at running commands in parallel, but multi-stage pipelines — apply fixes first, then verify everything in parallel — quickly turn into hard-to-read one-liners in `package.json`. codesweep lets you declare the whole pipeline in one YAML file, mixing sequential and parallel stages freely, and run it with a single command.
+
+It is built for "run all quality checks in one go" moments: post-task checks for AI coding agents, pre-commit hooks, and CI. Commands in a stage fail through — one failure doesn't cancel the other checks — so you see every error in a single run.
+
+In short: if you need build caching and dependency graphs, reach for [wireit](https://www.npmjs.com/package/wireit); if you just want to run a couple of commands in parallel, `concurrently` alone is enough; if you want a declarative, multi-stage quality-check pipeline, codesweep is for you.
+
 ## Requirements
 
 - Node.js >= 22 (or Bun >= 1)
