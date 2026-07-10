@@ -25,6 +25,8 @@ jobs:
           registry-url: https://registry.npmjs.org
       - run: bun install --frozen-lockfile
       # Trusted publishing requires a recent npm; the runner's default may be too old.
-      - run: npm install -g npm@latest
+      # Pinned to npm 11: npm 12.0.0 breaks `npm publish` on Node 22
+      # (MODULE_NOT_FOUND: sigstore in libnpmpublish provenance).
+      - run: npm install -g npm@11
       # prepublishOnly builds dist/; provenance is attached automatically via OIDC.
       - run: npm publish
