@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.4] - 2026-07-14
+
+### Fixed
+
+- `npm install @tzwzx/codesweep` failed with `lefthook: command not found` since 1.1.2. The package's `postinstall` script (`lefthook install`) also ran for consumers, where lefthook — a devDependency — is not installed. Hook setup moved to the `prepare` script, which only runs during local development.
+
 ## [1.1.3] - 2026-07-14
 
 ### Fixed
@@ -51,7 +57,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `--config` / `-c` option to point at a custom config file, and `--help` / `-h`.
 - Library API: `codesweep`, `loadConfig`, `runParallel`, `runSequential`, and the `isParallelStage` / `isSequentialStage` type guards.
 
-[Unreleased]: https://github.com/tzwzx/codesweep/compare/v1.1.3...HEAD
+[Unreleased]: https://github.com/tzwzx/codesweep/compare/v1.1.4...HEAD
+[1.1.4]: https://github.com/tzwzx/codesweep/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/tzwzx/codesweep/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/tzwzx/codesweep/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/tzwzx/codesweep/compare/v1.1.0...v1.1.1
