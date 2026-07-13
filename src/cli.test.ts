@@ -1,8 +1,9 @@
-import { describe, expect, setDefaultTimeout, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, setDefaultTimeout, spyOn, test } from "bun:test";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import nodePath from "node:path";
 
+import { parseCliArgs, runCli } from "./cli.js";
 import { createTempConfig } from "./test-helpers.js";
 
 // Each case spawns a full bun subprocess; raise the timeout above Bun's
@@ -12,7 +13,7 @@ setDefaultTimeout(20_000);
 const CLI_PATH = nodePath.resolve(import.meta.dirname, "cli.ts");
 
 /** Run the CLI as a subprocess and capture output */
-const runCli = async (
+const runCliProcess = async (
   args: string[],
   cwd?: string,
 ): Promise<{ stdout: string; stderr: string; exitCode: number }> => {
@@ -29,11 +30,71 @@ const runCli = async (
   return { exitCode, stderr, stdout };
 };
 
+describe("parseCliArgs", () => {
+  test("parses mode, config, and help flags", () => {
+    expect(parseCliArgs(["check", "--config", "./x.yml"])).toEqual({
+      config: "./x.yml",
+      help: false,
+      mode: "check",
+    });
+    expect(parseCliArgs(["-h"])).toEqual({ config: undefined, help: true, mode: undefined });
+  });
+
+  test("throws on invalid option syntax", () => {
+    expect(() => parseCliArgs(["check", "--config"])).toThrow("--config");
+  });
+});
+
+describe("runCli", () => {
+  let consoleLogSpy: ReturnType<typeof spyOn>;
+  let consoleErrorSpy: ReturnType<typeof spyOn>;
+
+  beforeEach(() => {
+    consoleLogSpy = spyOn(console, "log").mockImplementation(() => {});
+    consoleErrorSpy = spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consoleLogSpy.mockRestore();
+    consoleErrorSpy.mockRestore();
+  });
+
+  test("prints help and returns 0 for --help", async () => {
+    await expect(runCli({ help: true })).resolves.toBe(0);
+    expect(consoleLogSpy.mock.calls.flat().join(" ")).toContain("codesweep");
+  });
+
+  test("prints help and returns 1 when mode is missing", async () => {
+    await expect(runCli({ help: false })).resolves.toBe(1);
+  });
+
+  test("runs a mode and returns 0 on success", async () => {
+    const path = createTempConfig(`
+check:
+  - sequential:
+      - echo ok
+`);
+    await expect(runCli({ config: path, help: false, mode: "check" })).resolves.toBe(0);
+    rmSync(path, { recursive: true });
+  });
+
+  test("returns 1 when the mode fails", async () => {
+    const path = createTempConfig(`
+check:
+  - sequential:
+      - exit 1
+`);
+    await expect(runCli({ config: path, help: false, mode: "check" })).resolves.toBe(1);
+    expect(consoleErrorSpy.mock.calls.length).toBeGreaterThan(0);
+    rmSync(path, { recursive: true });
+  });
+});
+
 describe("CLI", () => {
   // --- Help display ---
 
   test("--help shows help and exits with code 0", async () => {
-    const result = await runCli(["--help"]);
+    const result = await runCliProcess(["--help"]);
     expect(result.stdout).toContain("codesweep");
     expect(result.stdout).toContain("check");
     expect(result.stdout).toContain("fix");
@@ -41,7 +102,7 @@ describe("CLI", () => {
   });
 
   test("-h shows help", async () => {
-    const result = await runCli(["-h"]);
+    const result = await runCliProcess(["-h"]);
     expect(result.stdout).toContain("codesweep");
     expect(result.exitCode).toBe(0);
   });
@@ -49,7 +110,7 @@ describe("CLI", () => {
   // --- No mode specified ---
 
   test("shows help and exits with code 1 when no mode is given", async () => {
-    const result = await runCli([]);
+    const result = await runCliProcess([]);
     expect(result.stdout).toContain("codesweep");
     expect(result.exitCode).toBe(1);
   });
@@ -62,7 +123,7 @@ check:
   - sequential:
       - echo ok
 `);
-    const result = await runCli(["nonexistent", "-c", path]);
+    const result = await runCliProcess(["nonexistent", "-c", path]);
     expect(result.stderr).toContain('Mode "nonexistent" is not defined');
     expect(result.exitCode).toBe(1);
     rmSync(path, { recursive: true });
@@ -76,7 +137,7 @@ check:
   - sequential:
       - echo ok
 `);
-    const result = await runCli(["check", "--config", path]);
+    const result = await runCliProcess(["check", "--config", path]);
     expect(result.exitCode).toBe(0);
     rmSync(path, { recursive: true });
   });
@@ -87,13 +148,13 @@ check:
   - sequential:
       - echo ok
 `);
-    const result = await runCli(["check", "-c", path]);
+    const result = await runCliProcess(["check", "-c", path]);
     expect(result.exitCode).toBe(0);
     rmSync(path, { recursive: true });
   });
 
   test("exits with code 1 when --config has no path", async () => {
-    const result = await runCli(["check", "--config"]);
+    const result = await runCliProcess(["check", "--config"]);
     expect(result.stderr).toContain("--config");
     expect(result.exitCode).toBe(1);
   });
@@ -106,7 +167,7 @@ check:
   - sequential:
       - echo hello
 `);
-    const result = await runCli(["check", "-c", path]);
+    const result = await runCliProcess(["check", "-c", path]);
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain("codesweep check passed");
     rmSync(path, { recursive: true });
@@ -118,7 +179,7 @@ fix:
   - sequential:
       - echo fixed
 `);
-    const result = await runCli(["fix", "-c", path]);
+    const result = await runCliProcess(["fix", "-c", path]);
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain("codesweep fix passed");
     rmSync(path, { recursive: true });
@@ -132,7 +193,7 @@ lint:
   - sequential:
       - echo linting
 `);
-    const result = await runCli(["lint", "-c", path]);
+    const result = await runCliProcess(["lint", "-c", path]);
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain("codesweep lint passed");
     rmSync(path, { recursive: true });
@@ -146,7 +207,7 @@ check:
   - sequential:
       - exit 1
 `);
-    const result = await runCli(["check", "-c", path]);
+    const result = await runCliProcess(["check", "-c", path]);
     expect(result.exitCode).toBe(1);
     rmSync(path, { recursive: true });
   });
@@ -155,7 +216,7 @@ check:
 
   test("init creates codesweep.yml in the current directory", async () => {
     const dir = mkdtempSync(nodePath.join(tmpdir(), "codesweep-cli-init-"));
-    const result = await runCli(["init"], dir);
+    const result = await runCliProcess(["init"], dir);
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain("Created");
     expect(readFileSync(nodePath.join(dir, "codesweep.yml"), "utf-8")).toContain("check:");
@@ -165,7 +226,7 @@ check:
   test("init creates a config file at the path given by --config", async () => {
     const dir = mkdtempSync(nodePath.join(tmpdir(), "codesweep-cli-init-"));
     const target = nodePath.join(dir, "custom.yml");
-    const result = await runCli(["init", "--config", target]);
+    const result = await runCliProcess(["init", "--config", target]);
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain(target);
     expect(readFileSync(target, "utf-8")).toContain("fix:");
@@ -178,7 +239,7 @@ check:
   - sequential:
       - echo ok
 `);
-    const result = await runCli(["init", "-c", path]);
+    const result = await runCliProcess(["init", "-c", path]);
     expect(result.exitCode).toBe(1);
     expect(result.stderr).toContain("Config file already exists");
     rmSync(path, { recursive: true });
@@ -190,7 +251,7 @@ init:
   - sequential:
       - echo should not run
 `);
-    const result = await runCli(["init", "-c", path]);
+    const result = await runCliProcess(["init", "-c", path]);
     // The subcommand takes precedence, so it reports the existing file
     // instead of running the user-defined "init" mode.
     expect(result.exitCode).toBe(1);
@@ -200,7 +261,7 @@ init:
   });
 
   test("--help mentions the init subcommand", async () => {
-    const result = await runCli(["--help"]);
+    const result = await runCliProcess(["--help"]);
     expect(result.stdout).toContain("Create a starter codesweep.yml");
     expect(result.exitCode).toBe(0);
   });
