@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-07-13
+
+### Changed
+
+- Maintenance release with no user-facing changes: replaced knip with fallow for unused-code analysis, added cspell and lefthook for spellcheck and pre-commit checks, and split CLI/config modules to satisfy complexity thresholds. Runtime behavior is unchanged.
+
 ## [1.1.1] - 2026-07-10
 
 ### Changed
@@ -39,7 +45,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `--config` / `-c` option to point at a custom config file, and `--help` / `-h`.
 - Library API: `codesweep`, `loadConfig`, `runParallel`, `runSequential`, and the `isParallelStage` / `isSequentialStage` type guards.
 
-[Unreleased]: https://github.com/tzwzx/codesweep/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/tzwzx/codesweep/compare/v1.1.2...HEAD
+[1.1.2]: https://github.com/tzwzx/codesweep/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/tzwzx/codesweep/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/tzwzx/codesweep/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/tzwzx/codesweep/compare/v1.0.0...v1.0.1
