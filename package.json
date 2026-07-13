@@ -54,7 +54,7 @@
     "codesweep:check": "node dist/cli.js check",
     "codesweep:fix": "node dist/cli.js fix",
     "prepublishOnly": "bun run build",
-    "postinstall": "lefthook install"
+    "prepare": "lefthook install"
   },
   "dependencies": {
     "concurrently": "10.0.3",
