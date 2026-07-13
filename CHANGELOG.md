@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.3] - 2026-07-14
+
+### Fixed
+
+- CLI silently exited without running any command when invoked through a symlinked bin shim on Node.js (e.g. `npx codesweep`, `package.json` scripts, or `node_modules/.bin/codesweep`). The entry-point detection introduced in 1.1.2 compared the symlink path in `process.argv[1]` against the resolved `import.meta.url`; it now resolves the real path before comparing.
+
 ## [1.1.2] - 2026-07-13
 
 ### Changed
@@ -45,7 +51,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `--config` / `-c` option to point at a custom config file, and `--help` / `-h`.
 - Library API: `codesweep`, `loadConfig`, `runParallel`, `runSequential`, and the `isParallelStage` / `isSequentialStage` type guards.
 
-[Unreleased]: https://github.com/tzwzx/codesweep/compare/v1.1.2...HEAD
+[Unreleased]: https://github.com/tzwzx/codesweep/compare/v1.1.3...HEAD
+[1.1.3]: https://github.com/tzwzx/codesweep/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/tzwzx/codesweep/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/tzwzx/codesweep/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/tzwzx/codesweep/compare/v1.0.1...v1.1.0
