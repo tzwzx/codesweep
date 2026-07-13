@@ -1,9 +1,17 @@
 import { afterEach, beforeEach, describe, expect, setDefaultTimeout, spyOn, test } from "bun:test";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import {
+  mkdtempSync,
+  readFileSync,
+  realpathSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import nodePath from "node:path";
+import { pathToFileURL } from "node:url";
 
-import { parseCliArgs, runCli } from "./cli.js";
+import { isEntryPoint, parseCliArgs, runCli } from "./cli.js";
 import { createTempConfig } from "./test-helpers.js";
 
 // Each case spawns a full bun subprocess; raise the timeout above Bun's
@@ -29,6 +37,49 @@ const runCliProcess = async (
   const exitCode = await proc.exited;
   return { exitCode, stderr, stdout };
 };
+
+describe("isEntryPoint", () => {
+  test("returns true when the entry path matches the module URL", () => {
+    // realpathSync mirrors Node, which resolves import.meta.url to the real
+    // path (tmpdir itself is a symlink on macOS: /var -> /private/var).
+    const dir = realpathSync(mkdtempSync(nodePath.join(tmpdir(), "codesweep-entry-")));
+    const realPath = nodePath.join(dir, "cli.js");
+    writeFileSync(realPath, "");
+    expect(isEntryPoint(realPath, pathToFileURL(realPath).href)).toBe(true);
+    rmSync(dir, { recursive: true });
+  });
+
+  test("returns true when the entry is a symlink to the module (npm bin shim)", () => {
+    // Node resolves import.meta.url to the real path, while process.argv[1]
+    // keeps the symlink path (e.g. node_modules/.bin/codesweep).
+    const dir = realpathSync(mkdtempSync(nodePath.join(tmpdir(), "codesweep-entry-")));
+    const realPath = nodePath.join(dir, "cli.js");
+    const linkPath = nodePath.join(dir, "bin-shim");
+    writeFileSync(realPath, "");
+    symlinkSync(realPath, linkPath);
+    expect(isEntryPoint(linkPath, pathToFileURL(realPath).href)).toBe(true);
+    rmSync(dir, { recursive: true });
+  });
+
+  test("returns false when the entry is a different module", () => {
+    const dir = realpathSync(mkdtempSync(nodePath.join(tmpdir(), "codesweep-entry-")));
+    const realPath = nodePath.join(dir, "cli.js");
+    const otherPath = nodePath.join(dir, "other.js");
+    writeFileSync(realPath, "");
+    writeFileSync(otherPath, "");
+    expect(isEntryPoint(otherPath, pathToFileURL(realPath).href)).toBe(false);
+    rmSync(dir, { recursive: true });
+  });
+
+  test("returns false when the entry is undefined", () => {
+    expect(isEntryPoint(undefined, import.meta.url)).toBe(false);
+  });
+
+  test("falls back to a plain path comparison when the entry does not exist", () => {
+    const missing = nodePath.join(tmpdir(), "codesweep-entry-missing", "cli.js");
+    expect(isEntryPoint(missing, pathToFileURL(missing).href)).toBe(true);
+  });
+});
 
 describe("parseCliArgs", () => {
   test("parses mode, config, and help flags", () => {

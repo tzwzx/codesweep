@@ -13,6 +13,7 @@
  *   codesweep check --config ./custom.yml # Use custom config file
  */
 
+import { realpathSync } from "node:fs";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 import { parseArgs } from "node:util";
@@ -20,10 +21,20 @@ import { parseArgs } from "node:util";
 import { codesweep } from "./index.js";
 import { initConfig } from "./init.js";
 
-/** True when this file is the process entry point (not imported by tests). */
-const isDirectRun = (): boolean => {
-  const [, entry] = process.argv;
-  return entry !== undefined && import.meta.url === pathToFileURL(entry).href;
+/**
+ * True when the entry path refers to the module at moduleUrl.
+ * Node resolves import.meta.url to the real path while process.argv[1] keeps
+ * the symlink path (e.g. node_modules/.bin/codesweep), so compare real paths.
+ */
+export const isEntryPoint = (entry: string | undefined, moduleUrl: string): boolean => {
+  if (entry === undefined) {
+    return false;
+  }
+  try {
+    return moduleUrl === pathToFileURL(realpathSync(entry)).href;
+  } catch {
+    return moduleUrl === pathToFileURL(entry).href;
+  }
 };
 
 const HELP_TEXT = `
@@ -113,7 +124,7 @@ const main = async (): Promise<void> => {
 // Only auto-run when invoked as the CLI entry point (not when imported by tests).
 // Guard against any unexpected rejection escaping main() so the process
 // always exits with a non-zero code instead of an unhandled rejection.
-if (isDirectRun()) {
+if (isEntryPoint(process.argv[1], import.meta.url)) {
   try {
     await main();
   } catch (error) {
