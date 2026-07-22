@@ -2,8 +2,6 @@ check:
   - parallel:
       - bun lint
       - bun tsc
-      - bun spellcheck
-      - bun spellcheck:unused
       - bun fallow
       - bun syncpack
       - bun test
@@ -13,8 +11,6 @@ fix:
       - bun fix
   - parallel:
       - bun tsc
-      - bun spellcheck
-      - bun spellcheck:unused
       - bun fallow
       - bun syncpack
       - bun test
