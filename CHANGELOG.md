@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-07-22
+
+### Added
+
+- `--quiet` / `-q` prints only what failed. Command output is buffered, so a run where everything passes produces no output at all and the exit code carries the result. Intended for CI, where a passing-but-noisy analyzer would otherwise bury the log; it also lets you keep such a tool in the pipeline for free. Every command still runs to completion, so a single run surfaces every error at once. Available to the library API as `codesweep(mode, configPath, { quiet: true })`.
+
 ## [1.1.4] - 2026-07-14
 
 ### Fixed
