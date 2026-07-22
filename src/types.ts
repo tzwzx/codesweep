@@ -16,3 +16,13 @@ export type Mode = string;
 
 /** Pipeline configuration (key = mode name, value = stages) */
 export type CodesweepConfig = Record<string, Stage[]>;
+
+/** Options controlling how a pipeline is run */
+export interface RunOptions {
+  /**
+   * Buffer command output and print only what failed.
+   * A run where everything passes produces no output at all, which keeps CI
+   * logs to just the problems.
+   */
+  quiet?: boolean;
+}

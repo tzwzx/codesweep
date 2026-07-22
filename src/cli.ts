@@ -11,6 +11,7 @@
  *   codesweep check                       # Run quality checks
  *   codesweep fix                         # Auto-fix then check
  *   codesweep check --config ./custom.yml # Use custom config file
+ *   codesweep check --quiet               # Print only what failed
  */
 
 import { realpathSync } from "node:fs";
@@ -50,6 +51,7 @@ Commands:
 
 Options:
   --config, -c <path>   Path to the config file (default: ./codesweep.yml)
+  --quiet, -q           Print only what failed; a passing run prints nothing
   --help, -h            Show help
 `;
 
@@ -57,6 +59,7 @@ export interface CliArgs {
   config?: string;
   help: boolean;
   mode?: string;
+  quiet: boolean;
 }
 
 /** Parse argv into structured CLI args. Throws on invalid option syntax. */
@@ -67,6 +70,7 @@ export const parseCliArgs = (argv: readonly string[]): CliArgs => {
     options: {
       config: { short: "c", type: "string" },
       help: { short: "h", type: "boolean" },
+      quiet: { short: "q", type: "boolean" },
     },
   });
 
@@ -74,6 +78,7 @@ export const parseCliArgs = (argv: readonly string[]): CliArgs => {
     config: values.config,
     help: values.help === true,
     mode: positionals[0],
+    quiet: values.quiet === true,
   };
 };
 
@@ -98,7 +103,7 @@ export const runCli = async (args: CliArgs): Promise<number> => {
       const createdPath = initConfig(args.config);
       console.log(`Created ${createdPath}`);
     } else {
-      await codesweep(args.mode, args.config);
+      await codesweep(args.mode, args.config, { quiet: args.quiet });
     }
     return 0;
   } catch (error) {

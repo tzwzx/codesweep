@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, setDefaultTimeout, spyOn, test } from "bun:test";
-import { rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import nodePath from "node:path";
 
 import { codesweep } from "./index.js";
 import { createTempConfig } from "./test-helpers.js";
@@ -100,5 +102,53 @@ fix:
     const logCalls = consoleLogSpy.mock.calls.flat().join(" ");
     expect(logCalls).toMatch(/\d+\.\d+s/u);
     rmSync(path, { recursive: true });
+  });
+
+  describe("quiet", () => {
+    test("prints nothing when every command passes", async () => {
+      const path = createTempConfig(`
+check:
+  - sequential:
+      - echo from-sequential
+  - parallel:
+      - echo from-parallel
+      - echo also-parallel
+`);
+      await codesweep("check", path, { quiet: true });
+
+      expect(consoleLogSpy).not.toHaveBeenCalled();
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
+      rmSync(path, { recursive: true });
+    });
+
+    test("prints the output of a failing command only", async () => {
+      const path = createTempConfig(`
+check:
+  - parallel:
+      - echo passing-noise
+      - sh -c 'echo failing-detail; exit 1'
+`);
+      await expect(codesweep("check", path, { quiet: true })).rejects.toThrow();
+
+      const output = [...consoleLogSpy.mock.calls, ...consoleErrorSpy.mock.calls].flat().join(" ");
+      expect(output).toContain("failing-detail");
+      expect(output).not.toContain("passing-noise");
+      rmSync(path, { recursive: true });
+    });
+
+    test("still runs every parallel command when one fails", async () => {
+      const markerDir = mkdtempSync(nodePath.join(tmpdir(), "codesweep-quiet-"));
+      const marker = nodePath.join(markerDir, "ran.txt");
+      const configPath = createTempConfig(`
+check:
+  - parallel:
+      - exit 1
+      - sh -c 'echo ran >> ${marker}'
+`);
+      await expect(codesweep("check", configPath, { quiet: true })).rejects.toThrow();
+
+      expect(readFileSync(marker, "utf-8")).toContain("ran");
+      rmSync(configPath, { recursive: true });
+    });
   });
 });

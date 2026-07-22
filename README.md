@@ -41,6 +41,7 @@ codesweep <command> [options]
 - **`init`** — Create a starter `codesweep.yml` in the current directory. Reserved as a subcommand; see note below.
 - **mode** — Any mode defined in `codesweep.yml` (for example `check` or `fix`).
 - **`--config` / `-c <path>`** — Path to the config file (default: `./codesweep.yml`).
+- **`--quiet` / `-q`** — Print only what failed. See [Quiet mode](#quiet-mode).
 - **`--help` / `-h`** — Show help.
 
 Examples:
@@ -50,13 +51,55 @@ codesweep init
 codesweep check
 codesweep fix
 codesweep check --config ./packages/app/codesweep.yml
+codesweep check --quiet
 ```
 
 Exit code `0` on success, `1` on failure. Elapsed time is printed when the run finishes.
 
+## Quiet mode
+
+`--quiet` buffers what each command prints and shows only the ones that failed. A run where everything passes produces **no output at all** — the exit code carries the result.
+
+```bash
+codesweep check           # every tool's progress, summaries and exit lines
+codesweep check --quiet   # (nothing)
+```
+
+This is aimed at CI, where a green build should not bury the next reader in thousands of lines of "no issues found". It also means a noisy analyzer costs nothing while it passes, so you can keep it in the pipeline without drowning the log.
+
+When something does fail, each failing command is printed with its full output:
+
+```
+❌ Command failed: npm run typecheck
+src/app.ts(12,7): error TS2322: Type 'string' is not assignable to type 'number'.
+
+❌ codesweep check failed (8.21s)
+```
+
+Every command still runs to completion, so one run surfaces every error at once — quiet mode changes what is printed, never what is executed.
+
+A dedicated CI mode pairs well with it:
+
+```yaml
+check:
+  - parallel:
+      - npm run lint
+      - npm run typecheck
+
+check-ci:
+  - parallel:
+      - npm run lint
+      - npm run typecheck
+      - npm run test
+```
+
+```bash
+codesweep check-ci --quiet
+```
+
 ## Library usage
 
-codesweep can also be called programmatically: `import { codesweep } from "@tzwzx/codesweep"` and `await codesweep("check")` (optionally passing a config path as the second argument).
+codesweep can also be called programmatically: `import { codesweep } from "@tzwzx/codesweep"` and `await codesweep("check")` (optionally passing a config path as the second argument, and `{ quiet: true }` as the third).
 
 ## Config: `codesweep.yml`
 

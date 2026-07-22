@@ -87,8 +87,19 @@ describe("parseCliArgs", () => {
       config: "./x.yml",
       help: false,
       mode: "check",
+      quiet: false,
     });
-    expect(parseCliArgs(["-h"])).toEqual({ config: undefined, help: true, mode: undefined });
+    expect(parseCliArgs(["-h"])).toEqual({
+      config: undefined,
+      help: true,
+      mode: undefined,
+      quiet: false,
+    });
+  });
+
+  test("parses the quiet flag in both spellings", () => {
+    expect(parseCliArgs(["check", "--quiet"]).quiet).toBe(true);
+    expect(parseCliArgs(["check", "-q"]).quiet).toBe(true);
   });
 
   test("throws on invalid option syntax", () => {
