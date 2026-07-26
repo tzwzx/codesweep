@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-07-27
+
+### Changed
+
+- Updated the bundled `concurrently` dependency to 10.0.4, which avoids the exit delays its kill timeout could introduce when a parallel stage shuts down.
+
 ## [1.2.0] - 2026-07-22
 
 ### Added
@@ -62,7 +68,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `--config` / `-c` option to point at a custom config file, and `--help` / `-h`.
 - Library API: `codesweep`, `loadConfig`, `runParallel`, `runSequential`, and the `isParallelStage` / `isSequentialStage` type guards.
 
-[Unreleased]: https://github.com/tzwzx/codesweep/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/tzwzx/codesweep/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/tzwzx/codesweep/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/tzwzx/codesweep/compare/v1.1.4...v1.2.0
 [1.1.4]: https://github.com/tzwzx/codesweep/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/tzwzx/codesweep/compare/v1.1.2...v1.1.3
