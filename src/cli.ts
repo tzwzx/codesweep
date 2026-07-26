@@ -27,7 +27,10 @@ import { initConfig } from "./init.js";
  * Node resolves import.meta.url to the real path while process.argv[1] keeps
  * the symlink path (e.g. node_modules/.bin/codesweep), so compare real paths.
  */
-export const isEntryPoint = (entry: string | undefined, moduleUrl: string): boolean => {
+export const isEntryPoint = (
+  entry: string | undefined,
+  moduleUrl: string
+): boolean => {
   if (entry === undefined) {
     return false;
   }

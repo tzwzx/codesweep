@@ -32,10 +32,15 @@ export const initConfig = (configPath?: string): string => {
   try {
     // The "wx" flag fails atomically if the file already exists,
     // avoiding a check-then-write race condition.
-    writeFileSync(resolvedPath, CONFIG_TEMPLATE, { encoding: "utf-8", flag: "wx" });
+    writeFileSync(resolvedPath, CONFIG_TEMPLATE, {
+      encoding: "utf-8",
+      flag: "wx",
+    });
   } catch (error) {
     if (error instanceof Error && "code" in error && error.code === "EEXIST") {
-      throw new Error(`Config file already exists: ${resolvedPath}`, { cause: error });
+      throw new Error(`Config file already exists: ${resolvedPath}`, {
+        cause: error,
+      });
     }
     throw error;
   }

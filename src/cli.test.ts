@@ -1,4 +1,12 @@
-import { afterEach, beforeEach, describe, expect, setDefaultTimeout, spyOn, test } from "bun:test";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  setDefaultTimeout,
+  spyOn,
+  test,
+} from "bun:test";
 import {
   mkdtempSync,
   readFileSync,
@@ -23,7 +31,7 @@ const CLI_PATH = nodePath.resolve(import.meta.dirname, "cli.ts");
 /** Run the CLI as a subprocess and capture output */
 const runCliProcess = async (
   args: string[],
-  cwd?: string,
+  cwd?: string
 ): Promise<{ stdout: string; stderr: string; exitCode: number }> => {
   const proc = Bun.spawn(["bun", "run", CLI_PATH, ...args], {
     cwd,
@@ -42,7 +50,9 @@ describe("isEntryPoint", () => {
   test("returns true when the entry path matches the module URL", () => {
     // realpathSync mirrors Node, which resolves import.meta.url to the real
     // path (tmpdir itself is a symlink on macOS: /var -> /private/var).
-    const dir = realpathSync(mkdtempSync(nodePath.join(tmpdir(), "codesweep-entry-")));
+    const dir = realpathSync(
+      mkdtempSync(nodePath.join(tmpdir(), "codesweep-entry-"))
+    );
     const realPath = nodePath.join(dir, "cli.js");
     writeFileSync(realPath, "");
     expect(isEntryPoint(realPath, pathToFileURL(realPath).href)).toBe(true);
@@ -52,7 +62,9 @@ describe("isEntryPoint", () => {
   test("returns true when the entry is a symlink to the module (npm bin shim)", () => {
     // Node resolves import.meta.url to the real path, while process.argv[1]
     // keeps the symlink path (e.g. node_modules/.bin/codesweep).
-    const dir = realpathSync(mkdtempSync(nodePath.join(tmpdir(), "codesweep-entry-")));
+    const dir = realpathSync(
+      mkdtempSync(nodePath.join(tmpdir(), "codesweep-entry-"))
+    );
     const realPath = nodePath.join(dir, "cli.js");
     const linkPath = nodePath.join(dir, "bin-shim");
     writeFileSync(realPath, "");
@@ -62,7 +74,9 @@ describe("isEntryPoint", () => {
   });
 
   test("returns false when the entry is a different module", () => {
-    const dir = realpathSync(mkdtempSync(nodePath.join(tmpdir(), "codesweep-entry-")));
+    const dir = realpathSync(
+      mkdtempSync(nodePath.join(tmpdir(), "codesweep-entry-"))
+    );
     const realPath = nodePath.join(dir, "cli.js");
     const otherPath = nodePath.join(dir, "other.js");
     writeFileSync(realPath, "");
@@ -76,7 +90,11 @@ describe("isEntryPoint", () => {
   });
 
   test("falls back to a plain path comparison when the entry does not exist", () => {
-    const missing = nodePath.join(tmpdir(), "codesweep-entry-missing", "cli.js");
+    const missing = nodePath.join(
+      tmpdir(),
+      "codesweep-entry-missing",
+      "cli.js"
+    );
     expect(isEntryPoint(missing, pathToFileURL(missing).href)).toBe(true);
   });
 });
@@ -136,7 +154,9 @@ check:
   - sequential:
       - echo ok
 `);
-    await expect(runCli({ config: path, help: false, mode: "check" })).resolves.toBe(0);
+    await expect(
+      runCli({ config: path, help: false, mode: "check" })
+    ).resolves.toBe(0);
     rmSync(path, { recursive: true });
   });
 
@@ -146,7 +166,9 @@ check:
   - sequential:
       - exit 1
 `);
-    await expect(runCli({ config: path, help: false, mode: "check" })).resolves.toBe(1);
+    await expect(
+      runCli({ config: path, help: false, mode: "check" })
+    ).resolves.toBe(1);
     expect(consoleErrorSpy.mock.calls.length).toBeGreaterThan(0);
     rmSync(path, { recursive: true });
   });
@@ -281,7 +303,9 @@ check:
     const result = await runCliProcess(["init"], dir);
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain("Created");
-    expect(readFileSync(nodePath.join(dir, "codesweep.yml"), "utf-8")).toContain("check:");
+    expect(
+      readFileSync(nodePath.join(dir, "codesweep.yml"), "utf-8")
+    ).toContain("check:");
     rmSync(dir, { recursive: true });
   });
 

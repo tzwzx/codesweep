@@ -40,7 +40,7 @@ const runCommand = (command: string): Promise<CommandOutput> =>
  */
 export const runSequential = async (
   commands: readonly string[],
-  options: RunOptions = {},
+  options: RunOptions = {}
 ): Promise<void> => {
   const errors: { command: string; message: string }[] = [];
 
@@ -60,7 +60,9 @@ export const runSequential = async (
   }
 
   if (errors.length > 0) {
-    const errorMessages = errors.map((e) => `${e.command}: ${e.message}`).join("\n");
+    const errorMessages = errors
+      .map((e) => `${e.command}: ${e.message}`)
+      .join("\n");
     throw new Error(`Sequential execution failed:\n${errorMessages}`);
   }
 };
@@ -71,10 +73,14 @@ export const runSequential = async (
  * every error at once.
  */
 const runParallelQuiet = async (commands: readonly string[]): Promise<void> => {
-  const results = await Promise.allSettled(commands.map((command) => runCommand(command)));
+  const results = await Promise.allSettled(
+    commands.map((command) => runCommand(command))
+  );
 
   const failures = results.flatMap((result, index) =>
-    result.status === "rejected" ? [{ command: commands[index] ?? "", error: result.reason }] : [],
+    result.status === "rejected"
+      ? [{ command: commands[index] ?? "", error: result.reason }]
+      : []
   );
 
   for (const { command, error } of failures) {
@@ -93,7 +99,7 @@ const runParallelQuiet = async (commands: readonly string[]): Promise<void> => {
  */
 export const runParallel = async (
   commands: readonly string[],
-  options: RunOptions = {},
+  options: RunOptions = {}
 ): Promise<void> => {
   if (options.quiet) {
     return runParallelQuiet(commands);
