@@ -47,8 +47,6 @@
     "lint": "oxfmt --check && oxlint",
     "fix": "oxfmt && oxlint --fix",
     "tsc": "tsc --noEmit",
-    "spellcheck": "bunx cspell",
-    "spellcheck:unused": "bunx cspell-check-unused-words",
     "syncpack": "syncpack lint",
     "test": "bun test",
     "codesweep:check": "node dist/cli.js check",
