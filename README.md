@@ -1,5 +1,7 @@
 # codesweep
 
+English | [日本語](https://github.com/tzwzx/codesweep/blob/main/README.ja.md)
+
 [![npm version](https://img.shields.io/npm/v/@tzwzx/codesweep.svg)](https://www.npmjs.com/package/@tzwzx/codesweep) [![license](https://img.shields.io/npm/l/@tzwzx/codesweep.svg)](./LICENSE)
 
 Run lint, format, typecheck, test, and other code quality commands in one go. Configure each project with a YAML file.
