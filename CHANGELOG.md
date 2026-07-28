@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-07-29
+
+### Added
+
+- Japanese README (`README.ja.md`), linked from the top of the English README.
+
+### Changed
+
+- Maintenance release with no runtime changes: refreshed dev dependencies (fallow, oxfmt, oxlint, `@types/node`).
+
 ## [1.2.1] - 2026-07-27
 
 ### Changed
@@ -68,7 +78,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `--config` / `-c` option to point at a custom config file, and `--help` / `-h`.
 - Library API: `codesweep`, `loadConfig`, `runParallel`, `runSequential`, and the `isParallelStage` / `isSequentialStage` type guards.
 
-[Unreleased]: https://github.com/tzwzx/codesweep/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/tzwzx/codesweep/compare/v1.2.2...HEAD
+[1.2.2]: https://github.com/tzwzx/codesweep/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/tzwzx/codesweep/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/tzwzx/codesweep/compare/v1.1.4...v1.2.0
 [1.1.4]: https://github.com/tzwzx/codesweep/compare/v1.1.3...v1.1.4
