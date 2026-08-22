@@ -1,7 +1,7 @@
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
 
-import concurrently from "concurrently";
+import { concurrently } from "concurrently";
 
 import type { RunOptions } from "./types.js";
 
