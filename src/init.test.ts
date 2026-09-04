@@ -7,8 +7,7 @@ import { loadConfig } from "./config.js";
 import { initConfig } from "./init.js";
 
 /** Create an empty temporary directory for init tests */
-const createTempDir = (): string =>
-  mkdtempSync(path.join(tmpdir(), "codesweep-init-test-"));
+const createTempDir = (): string => mkdtempSync(path.join(tmpdir(), "codesweep-init-test-"));
 
 describe("initConfig", () => {
   test("creates a config file at the given path and returns the absolute path", () => {
@@ -67,9 +66,7 @@ fix:
     const target = path.join(dir, "codesweep.yml");
     writeFileSync(target, "original content", "utf-8");
 
-    expect(() => initConfig(target)).toThrow(
-      `Config file already exists: ${target}`
-    );
+    expect(() => initConfig(target)).toThrow(`Config file already exists: ${target}`);
     expect(readFileSync(target, "utf-8")).toBe("original content");
     rmSync(dir, { recursive: true });
   });

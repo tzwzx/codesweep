@@ -26,10 +26,7 @@ const runStage = (stage: Stage, options: RunOptions): Promise<void> =>
     ? runParallel(stage.parallel, options)
     : runSequential(stage.sequential, options);
 
-const runPipeline = async (
-  stages: readonly Stage[],
-  options: RunOptions
-): Promise<void> => {
+const runPipeline = async (stages: readonly Stage[], options: RunOptions): Promise<void> => {
   for (const stage of stages) {
     // Stages run serially by design ("serial between stages"); parallelizing would break the contract.
     // oxlint-disable-next-line no-await-in-loop
@@ -52,7 +49,7 @@ const runPipeline = async (
 export const codesweep = async (
   mode: Mode,
   configPath?: string,
-  options: RunOptions = {}
+  options: RunOptions = {},
 ): Promise<void> => {
   const config = loadConfig(configPath);
   const stages = config[mode];
@@ -60,7 +57,7 @@ export const codesweep = async (
   if (!stages) {
     const availableModes = Object.keys(config).join(", ");
     throw new Error(
-      `Mode "${mode}" is not defined in the config file (available: ${availableModes})`
+      `Mode "${mode}" is not defined in the config file (available: ${availableModes})`,
     );
   }
 

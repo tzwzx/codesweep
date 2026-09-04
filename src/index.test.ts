@@ -1,12 +1,4 @@
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  setDefaultTimeout,
-  spyOn,
-  test,
-} from "bun:test";
+import { afterEach, beforeEach, describe, expect, setDefaultTimeout, spyOn, test } from "bun:test";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import nodePath from "node:path";
@@ -81,7 +73,7 @@ check:
       - echo hello
 `);
     await expect(codesweep("fix", path)).rejects.toThrow(
-      'Mode "fix" is not defined in the config file (available: check)'
+      'Mode "fix" is not defined in the config file (available: check)',
     );
     rmSync(path, { recursive: true });
   });
@@ -138,21 +130,14 @@ check:
 `);
       await expect(codesweep("check", path, { quiet: true })).rejects.toThrow();
 
-      const output = [
-        ...consoleLogSpy.mock.calls,
-        ...consoleErrorSpy.mock.calls,
-      ]
-        .flat()
-        .join(" ");
+      const output = [...consoleLogSpy.mock.calls, ...consoleErrorSpy.mock.calls].flat().join(" ");
       expect(output).toContain("failing-detail");
       expect(output).not.toContain("passing-noise");
       rmSync(path, { recursive: true });
     });
 
     test("still runs every parallel command when one fails", async () => {
-      const markerDir = mkdtempSync(
-        nodePath.join(tmpdir(), "codesweep-quiet-")
-      );
+      const markerDir = mkdtempSync(nodePath.join(tmpdir(), "codesweep-quiet-"));
       const marker = nodePath.join(markerDir, "ran.txt");
       const configPath = createTempConfig(`
 check:
@@ -160,9 +145,7 @@ check:
       - exit 1
       - sh -c 'echo ran >> ${marker}'
 `);
-      await expect(
-        codesweep("check", configPath, { quiet: true })
-      ).rejects.toThrow();
+      await expect(codesweep("check", configPath, { quiet: true })).rejects.toThrow();
 
       expect(readFileSync(marker, "utf-8")).toContain("ran");
       rmSync(configPath, { recursive: true });

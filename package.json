@@ -66,8 +66,7 @@
     "oxfmt": "0.66.0",
     "oxlint": "1.81.0",
     "syncpack": "15.3.3",
-    "typescript": "7.0.2",
-    "ultracite": "7.10.7"
+    "typescript": "7.0.2"
   },
   "engines": {
     "bun": ">=1",

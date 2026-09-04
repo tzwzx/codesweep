@@ -144,9 +144,7 @@ fix:
   // --- Invalid: file errors ---
 
   test("throws when config file does not exist", () => {
-    expect(() => loadConfig("/nonexistent/path/codesweep.yml")).toThrow(
-      "Config file not found"
-    );
+    expect(() => loadConfig("/nonexistent/path/codesweep.yml")).toThrow("Config file not found");
   });
 
   // --- Invalid: config structure ---
@@ -165,9 +163,7 @@ fix:
 
   test("throws on empty object config", () => {
     const path = createTempConfig("{}");
-    expect(() => loadConfig(path)).toThrow(
-      "Config must define at least one mode"
-    );
+    expect(() => loadConfig(path)).toThrow("Config must define at least one mode");
     rmSync(path, { recursive: true });
   });
 
@@ -195,9 +191,7 @@ check:
 check:
   - unknown: ["echo hello"]
 `);
-    expect(() => loadConfig(path)).toThrow(
-      'Stage must have a "parallel" or "sequential" key'
-    );
+    expect(() => loadConfig(path)).toThrow('Stage must have a "parallel" or "sequential" key');
     rmSync(path, { recursive: true });
   });
 
@@ -209,9 +203,7 @@ check:
     sequential:
       - echo b
 `);
-    expect(() => loadConfig(path)).toThrow(
-      'Stage cannot have both "parallel" and "sequential"'
-    );
+    expect(() => loadConfig(path)).toThrow('Stage cannot have both "parallel" and "sequential"');
     rmSync(path, { recursive: true });
   });
 
@@ -222,9 +214,7 @@ check:
 check:
   - parallel: []
 `);
-    expect(() => loadConfig(path)).toThrow(
-      "Command list must be a non-empty array"
-    );
+    expect(() => loadConfig(path)).toThrow("Command list must be a non-empty array");
     rmSync(path, { recursive: true });
   });
 
@@ -234,9 +224,7 @@ check:
   - parallel:
       - 123
 `);
-    expect(() => loadConfig(path)).toThrow(
-      "Each command must be a non-empty string"
-    );
+    expect(() => loadConfig(path)).toThrow("Each command must be a non-empty string");
     rmSync(path, { recursive: true });
   });
 
@@ -246,9 +234,7 @@ check:
   - parallel:
       - ""
 `);
-    expect(() => loadConfig(path)).toThrow(
-      "Each command must be a non-empty string"
-    );
+    expect(() => loadConfig(path)).toThrow("Each command must be a non-empty string");
     rmSync(path, { recursive: true });
   });
 
@@ -258,9 +244,7 @@ check:
   - parallel:
       - "   "
 `);
-    expect(() => loadConfig(path)).toThrow(
-      "Each command must be a non-empty string"
-    );
+    expect(() => loadConfig(path)).toThrow("Each command must be a non-empty string");
     rmSync(path, { recursive: true });
   });
 });
