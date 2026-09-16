@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.2.6] - 2026-09-16
+
+### Changed
+
+- Updated the bundled `yaml` dependency to 2.9.1. The `parse()` API is unchanged.
+- Maintenance: dropped ultracite in favor of oxfmt/oxlint defaults, and refreshed dev dependencies (fallow, oxfmt, oxlint, lefthook, bun-types, `@types/node`).
+
 ## [1.2.5] - 2026-08-26
 
 ### Changed
@@ -97,7 +104,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `--config` / `-c` option to point at a custom config file, and `--help` / `-h`.
 - Library API: `codesweep`, `loadConfig`, `runParallel`, `runSequential`, and the `isParallelStage` / `isSequentialStage` type guards.
 
-[Unreleased]: https://github.com/tzwzx/codesweep/compare/v1.2.5...HEAD
+[Unreleased]: https://github.com/tzwzx/codesweep/compare/v1.2.6...HEAD
+[1.2.6]: https://github.com/tzwzx/codesweep/compare/v1.2.5...v1.2.6
 [1.2.5]: https://github.com/tzwzx/codesweep/compare/v1.2.4...v1.2.5
 [1.2.4]: https://github.com/tzwzx/codesweep/compare/v1.2.3...v1.2.4
 [1.2.3]: https://github.com/tzwzx/codesweep/compare/v1.2.2...v1.2.3
