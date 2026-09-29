@@ -59,12 +59,12 @@
     "yaml": "2.9.1"
   },
   "devDependencies": {
-    "@types/node": "26.4.1",
+    "@types/node": "26.6.3",
     "bun-types": "1.4.2",
-    "fallow": "3.26.0",
+    "fallow": "3.30.0",
     "lefthook": "2.1.14",
-    "oxfmt": "0.68.0",
-    "oxlint": "1.83.0",
+    "oxfmt": "0.71.0",
+    "oxlint": "1.86.0",
     "syncpack": "15.3.3",
     "typescript": "7.0.2"
   },
