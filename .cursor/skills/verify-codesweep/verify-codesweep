@@ -1,0 +1,318 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_PATH="$(readlink -f "$0")"
+SKILL_DIR="$(dirname "$SCRIPT_PATH")"
+REPO_ROOT="$(cd "$SKILL_DIR/../../.." && pwd)"
+CLI="${CODESWEEP_CLI:-$REPO_ROOT/dist/cli.js}"
+TMUX_CONF="/exec-daemon/tmux.portal.conf"
+WORK_ROOT="/tmp/codesweep-verify-work"
+EVIDENCE_ROOT="/tmp/codesweep-verify-evidence"
+
+die() {
+  printf 'verify-codesweep: %s\n' "$*" >&2
+  exit 1
+}
+
+usage() {
+  cat <<'EOF'
+Usage:
+  verify-codesweep launch
+  verify-codesweep session
+  verify-codesweep doctor
+  verify-codesweep drive --label <id> -- <codesweep argv>
+  verify-codesweep capture --label <id> -- <work-relative-path>
+  verify-codesweep cleanup
+EOF
+}
+
+tmux_cmd() {
+  if [[ -f "$TMUX_CONF" ]]; then
+    tmux -f "$TMUX_CONF" "$@"
+  else
+    tmux "$@"
+  fi
+}
+
+session_alive() {
+  tmux_cmd has-session -t "=$1" 2>/dev/null
+}
+
+assert_label() {
+  local label="$1"
+  [[ -n "$label" ]] || die "missing --label"
+  [[ "$label" =~ ^[a-z0-9-]+$ ]] || die "label must match [a-z0-9-]+"
+}
+
+assert_safe_root() {
+  local path="$1"
+  local root="$2"
+  local resolved
+  case "$path" in
+    "$root"/*) ;;
+    *) die "$path is outside $root" ;;
+  esac
+  case "$path" in
+    *..*) die "$path must not contain .." ;;
+  esac
+  if [[ -d "$path" ]]; then
+    resolved="$(cd "$path" && pwd -P)"
+    case "$resolved" in
+      "$root"/*) ;;
+      *) die "$path resolves outside $root" ;;
+    esac
+  fi
+}
+
+require_session_env() {
+  [[ -n "${CODESWEEP_VERIFY_RUN:-}" ]] || die "CODESWEEP_VERIFY_RUN is unset; run session first"
+  [[ -n "${CODESWEEP_VERIFY_WORK:-}" ]] || die "CODESWEEP_VERIFY_WORK is unset; run session first"
+  [[ -n "${CODESWEEP_VERIFY_EVIDENCE:-}" ]] || die "CODESWEEP_VERIFY_EVIDENCE is unset; run session first"
+  assert_safe_root "$CODESWEEP_VERIFY_WORK" "$WORK_ROOT"
+  assert_safe_root "$CODESWEEP_VERIFY_EVIDENCE" "$EVIDENCE_ROOT"
+  [[ "$CODESWEEP_VERIFY_WORK" != "$REPO_ROOT" ]] || die "refusing to drive the repository root"
+}
+
+parse_label() {
+  local flag_name="$1"
+  shift
+  LABEL=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --label)
+        [[ $# -ge 2 ]] || die "--label needs a value"
+        LABEL="$2"
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+      *)
+        die "unknown $flag_name flag: $1"
+        ;;
+    esac
+  done
+  assert_label "$LABEL"
+  REMAINING=("$@")
+}
+
+cmd_doctor() {
+  local major help_out help_err help_code
+  command -v node >/dev/null 2>&1 || die "node is not on PATH"
+  major="$(node -p "Number(process.versions.node.split('.')[0])")"
+  [[ "$major" -ge 22 ]] || die "node >= 22 required, found $(node -v)"
+  [[ -f "$CLI" ]] || die "missing built CLI at $CLI; run launch"
+  [[ -f "$REPO_ROOT/package.json" ]] || die "missing package.json"
+  local stale
+  stale="$(find "$REPO_ROOT/src" -name '*.ts' ! -name '*.test.ts' ! -name 'test-helpers.ts' -newer "$CLI" -print -quit || true)"
+  if [[ -n "$stale" ]]; then
+    die "built CLI is older than a source file; run launch"
+  fi
+
+  help_out="$(mktemp)"
+  help_err="$(mktemp)"
+  set +e
+  (
+    cd /tmp
+    node "$CLI" --help >"$help_out" 2>"$help_err"
+  )
+  help_code=$?
+  set -e
+  if [[ "$help_code" -ne 0 ]]; then
+    command rm -f "$help_out" "$help_err"
+    die "codesweep --help exited $help_code"
+  fi
+  if ! grep -q "codesweep - Run code quality checks" "$help_out"; then
+    command rm -f "$help_out" "$help_err"
+    die "codesweep --help did not print the expected banner"
+  fi
+  command rm -f "$help_out" "$help_err"
+
+  if [[ -n "${CODESWEEP_VERIFY_WORK:-}" || -n "${CODESWEEP_VERIFY_EVIDENCE:-}" || -n "${CODESWEEP_VERIFY_RUN:-}" ]]; then
+    require_session_env
+    [[ -d "$CODESWEEP_VERIFY_WORK" ]] || die "work dir does not exist: $CODESWEEP_VERIFY_WORK"
+    [[ -d "$CODESWEEP_VERIFY_EVIDENCE" ]] || die "evidence dir does not exist: $CODESWEEP_VERIFY_EVIDENCE"
+  fi
+
+  local version
+  version="$(CODESWEEP_REPO="$REPO_ROOT" node -p "JSON.parse(require('node:fs').readFileSync(process.env.CODESWEEP_REPO + '/package.json','utf8')).version")"
+  printf 'ready\n'
+  printf 'cli=%s\n' "$CLI"
+  printf 'node=%s\n' "$(node -v)"
+  printf 'version=%s\n' "$version"
+  if [[ -n "${CODESWEEP_VERIFY_RUN:-}" ]]; then
+    printf 'run=%s\n' "$CODESWEEP_VERIFY_RUN"
+    printf 'work=%s\n' "$CODESWEEP_VERIFY_WORK"
+    printf 'evidence=%s\n' "$CODESWEEP_VERIFY_EVIDENCE"
+  fi
+}
+
+cmd_launch() {
+  command -v bun >/dev/null 2>&1 || die "bun is not on PATH"
+  cd "$REPO_ROOT"
+  bun install --frozen-lockfile --ignore-scripts
+  bun run build
+  [[ -f "$CLI" ]] || die "build did not produce $CLI"
+  cmd_doctor
+}
+
+cmd_session() {
+  local run work evidence
+  run="$(date -u +%Y%m%dT%H%M%SZ)-$$-$RANDOM"
+  work="$WORK_ROOT/$run"
+  evidence="$EVIDENCE_ROOT/$run"
+  [[ ! -e "$work" ]] || die "work dir already exists: $work"
+  [[ ! -e "$evidence" ]] || die "evidence dir already exists: $evidence"
+  mkdir -p "$WORK_ROOT" "$EVIDENCE_ROOT"
+  mkdir "$work" "$evidence"
+  printf 'export CODESWEEP_VERIFY_RUN=%q\n' "$run"
+  printf 'export CODESWEEP_VERIFY_WORK=%q\n' "$work"
+  printf 'export CODESWEEP_VERIFY_EVIDENCE=%q\n' "$evidence"
+  printf 'export CODESWEEP_CLI=%q\n' "$CLI"
+}
+
+write_runner() {
+  local runner="$1"
+  local evidence_dir="$2"
+  shift 2
+  {
+    printf '%s\n' '#!/usr/bin/env bash'
+    printf '%s\n' 'set -u'
+    printf 'cd %q || exit 97\n' "$CODESWEEP_VERIFY_WORK"
+    printf 'args=(\n'
+    printf '  %q\n' "$CLI"
+    local arg
+    for arg in "$@"; do
+      printf '  %q\n' "$arg"
+    done
+    printf ')\n'
+    printf 'node "${args[@]}" > %q 2> %q\n' "$evidence_dir/stdout.txt" "$evidence_dir/stderr.txt"
+    printf '%s\n' 'code=$?'
+    printf 'printf "%%s\\n" "$code" > %q\n' "$evidence_dir/exit-code.txt"
+    printf '%s\n' 'exit "$code"'
+  } >"$runner"
+}
+
+cmd_drive() {
+  require_session_env
+  parse_label drive "$@"
+  local evidence_dir session runner timeout ticks i
+  evidence_dir="$CODESWEEP_VERIFY_EVIDENCE/$LABEL"
+  mkdir -p "$evidence_dir"
+  {
+    printf 'node %q' "$CLI"
+    local arg
+    for arg in "${REMAINING[@]}"; do
+      printf ' %q' "$arg"
+    done
+    printf '\n'
+  } >"$evidence_dir/command.txt"
+  printf '%s\n' "$CODESWEEP_VERIFY_WORK" >"$evidence_dir/work.txt"
+
+  session="codesweep-verify-${CODESWEEP_VERIFY_RUN}-${LABEL}"
+  printf '%s\n' "$session" >"$evidence_dir/pty-session.txt"
+  printf '%s\n' "$session" >>"$CODESWEEP_VERIFY_EVIDENCE/sessions.txt"
+  if session_alive "$session"; then
+    die "tmux session already exists: $session"
+  fi
+
+  runner="$CODESWEEP_VERIFY_WORK/.drive-$LABEL.sh"
+  write_runner "$runner" "$evidence_dir" "${REMAINING[@]}"
+  tmux_cmd new-session -d -s "$session" -c "$CODESWEEP_VERIFY_WORK" -- bash "$runner"
+
+  timeout="${CODESWEEP_VERIFY_TIMEOUT_SECONDS:-60}"
+  ticks=$((timeout * 10))
+  for ((i = 0; i < ticks; i++)); do
+    if [[ -f "$evidence_dir/exit-code.txt" ]]; then
+      break
+    fi
+    if ! session_alive "$session"; then
+      break
+    fi
+    sleep 0.1
+  done
+
+  for ((i = 0; i < 50; i++)); do
+    if ! session_alive "$session"; then
+      break
+    fi
+    if [[ -f "$evidence_dir/exit-code.txt" ]]; then
+      sleep 0.1
+    else
+      break
+    fi
+  done
+  if session_alive "$session"; then
+    tmux_cmd kill-session -t "=$session"
+    die "drive timed out or left a live session: $LABEL"
+  fi
+  [[ -f "$evidence_dir/exit-code.txt" ]] || die "drive produced no exit code: $LABEL"
+
+  printf 'label=%s\n' "$LABEL"
+  printf 'exit=%s\n' "$(tr -d '[:space:]' <"$evidence_dir/exit-code.txt")"
+  printf 'stdout=%s\n' "$evidence_dir/stdout.txt"
+  printf 'stderr=%s\n' "$evidence_dir/stderr.txt"
+  printf 'pty=%s\n' "$session"
+}
+
+cmd_capture() {
+  require_session_env
+  parse_label capture "$@"
+  [[ "${#REMAINING[@]}" -eq 1 ]] || die "capture requires one work-relative path"
+  local rel src dest_dir dest
+  rel="${REMAINING[0]}"
+  case "$rel" in
+    /*|*..*) die "capture path must stay inside the work dir: $rel" ;;
+  esac
+  src="$CODESWEEP_VERIFY_WORK/$rel"
+  [[ -f "$src" ]] || die "no such file: $src"
+  dest_dir="$CODESWEEP_VERIFY_EVIDENCE/$LABEL"
+  mkdir -p "$dest_dir"
+  dest="$dest_dir/$(basename "$rel")"
+  command cp -f -- "$src" "$dest"
+  printf 'captured=%s\n' "$dest"
+}
+
+cmd_cleanup() {
+  require_session_env
+  local session
+  if [[ -f "$CODESWEEP_VERIFY_EVIDENCE/sessions.txt" ]]; then
+    while IFS= read -r session; do
+      [[ -n "$session" ]] || continue
+      if session_alive "$session"; then
+        tmux_cmd kill-session -t "=$session"
+      fi
+    done <"$CODESWEEP_VERIFY_EVIDENCE/sessions.txt"
+  fi
+  assert_safe_root "$CODESWEEP_VERIFY_WORK" "$WORK_ROOT"
+  command rm -rf -- "$CODESWEEP_VERIFY_WORK"
+  [[ ! -e "$CODESWEEP_VERIFY_WORK" ]] || die "work dir still exists"
+  [[ -d "$CODESWEEP_VERIFY_EVIDENCE" ]] || die "evidence dir missing after cleanup"
+  printf 'work removed\n'
+  printf 'evidence=%s\n' "$CODESWEEP_VERIFY_EVIDENCE"
+}
+
+main() {
+  local cmd="${1:-}"
+  if [[ -z "$cmd" ]]; then
+    usage >&2
+    exit 1
+  fi
+  shift
+  case "$cmd" in
+    launch) cmd_launch "$@" ;;
+    session) cmd_session "$@" ;;
+    doctor) cmd_doctor "$@" ;;
+    drive) cmd_drive "$@" ;;
+    capture) cmd_capture "$@" ;;
+    cleanup) cmd_cleanup "$@" ;;
+    -h | --help | help) usage ;;
+    *)
+      usage >&2
+      die "unknown command: $cmd"
+      ;;
+  esac
+}
+
+main "$@"
