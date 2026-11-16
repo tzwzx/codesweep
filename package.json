@@ -55,16 +55,16 @@
     "prepare": "lefthook install"
   },
   "dependencies": {
-    "concurrently": "10.0.5",
+    "concurrently": "10.0.7",
     "yaml": "2.9.1"
   },
   "devDependencies": {
-    "@types/node": "26.6.3",
-    "bun-types": "1.4.2",
-    "fallow": "3.30.0",
-    "lefthook": "2.1.14",
-    "oxfmt": "0.71.0",
-    "oxlint": "1.86.0",
+    "@types/node": "26.6.6",
+    "bun-types": "1.4.4",
+    "fallow": "3.43.1",
+    "lefthook": "2.2.2",
+    "oxfmt": "0.78.0",
+    "oxlint": "1.93.0",
     "syncpack": "15.3.3",
     "typescript": "7.0.2"
   },
