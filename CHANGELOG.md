@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.2.7] - 2026-11-17
+
 ### Fixed
 
 - A mode name that the config file does not define, but that every JavaScript object has (such as `constructor` or `toString`), now fails with the usual `Mode "<name>" is not defined` error. Before, it started the pipeline and failed with `stages is not iterable`.
@@ -15,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Updated the bundled `concurrently` dependency to 10.0.7, which flushes grouped output after a command fails to spawn.
 - README: fail-through applies within a stage. After a failed stage, later stages do not run. The quiet-mode failure example now shows the summary block.
+- Maintenance: refreshed dev dependencies (fallow, oxfmt, oxlint, lefthook, bun-types, `@types/node`).
 
 ## [1.2.6] - 2026-09-16
 
@@ -114,7 +117,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `--config` / `-c` option to point at a custom config file, and `--help` / `-h`.
 - Library API: `codesweep`, `loadConfig`, `runParallel`, `runSequential`, and the `isParallelStage` / `isSequentialStage` type guards.
 
-[Unreleased]: https://github.com/tzwzx/codesweep/compare/v1.2.6...HEAD
+[Unreleased]: https://github.com/tzwzx/codesweep/compare/v1.2.7...HEAD
+[1.2.7]: https://github.com/tzwzx/codesweep/compare/v1.2.6...v1.2.7
 [1.2.6]: https://github.com/tzwzx/codesweep/compare/v1.2.5...v1.2.6
 [1.2.5]: https://github.com/tzwzx/codesweep/compare/v1.2.4...v1.2.5
 [1.2.4]: https://github.com/tzwzx/codesweep/compare/v1.2.3...v1.2.4
