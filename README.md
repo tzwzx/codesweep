@@ -10,7 +10,7 @@ Run lint, format, typecheck, test, and other code quality commands in one go. Co
 
 Task runners like [concurrently](https://www.npmjs.com/package/concurrently) and [npm-run-all2](https://www.npmjs.com/package/npm-run-all2) are great at running commands in parallel, but multi-stage pipelines — apply fixes first, then verify everything in parallel — quickly turn into hard-to-read one-liners in `package.json`. codesweep lets you declare the whole pipeline in one YAML file, mixing sequential and parallel stages freely, and run it with a single command.
 
-It is built for "run all quality checks in one go" moments: post-task checks for AI coding agents, pre-commit hooks, and CI. Commands in a stage fail through — one failure doesn't cancel the other checks — so you see every error in a single run.
+It is built for "run all quality checks in one go" moments: post-task checks for AI coding agents, pre-commit hooks, and CI. Commands in a stage fail through — one failure doesn't cancel the other checks in that stage — so you see all of the stage's errors in a single run.
 
 In short: if you need build caching and dependency graphs, reach for [wireit](https://www.npmjs.com/package/wireit); if you just want to run a couple of commands in parallel, `concurrently` alone is enough; if you want a declarative, multi-stage quality-check pipeline, codesweep is for you.
 
@@ -75,9 +75,12 @@ When something does fail, each failing command is printed with its full output:
 src/app.ts(12,7): error TS2322: Type 'string' is not assignable to type 'number'.
 
 ❌ codesweep check failed (8.21s)
+
+Parallel execution failed:
+npm run typecheck
 ```
 
-Every command still runs to completion, so one run surfaces every error at once — quiet mode changes what is printed, never what is executed.
+Every command in the failing stage still runs to completion, so one run surfaces all of that stage's errors at once; later stages do not start. Quiet mode changes what is printed, never what is executed.
 
 A dedicated CI mode pairs well with it:
 
@@ -139,7 +142,7 @@ Define one or more **modes**. Each mode is an ordered list of **stages**. Each s
 
 - **Stages** run one after another (stage 2 starts after stage 1 finishes).
 - **Within a stage**, `parallel` runs commands concurrently; `sequential` runs them in order.
-- **Fail-through**: If one command in a stage fails, other commands in that stage still run; the stage then fails as a whole.
+- **Fail-through**: If one command in a stage fails, other commands in that stage still run; the stage then fails as a whole, and later stages do not run.
 
 ### Validation rules
 
