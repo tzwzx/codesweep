@@ -52,7 +52,8 @@ export const codesweep = async (
   options: RunOptions = {},
 ): Promise<void> => {
   const config = loadConfig(configPath);
-  const stages = config[mode];
+  // Only modes the config file defines count; inherited names such as "constructor" do not.
+  const stages = Object.hasOwn(config, mode) ? config[mode] : undefined;
 
   if (!stages) {
     const availableModes = Object.keys(config).join(", ");

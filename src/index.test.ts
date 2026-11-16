@@ -78,6 +78,39 @@ check:
     rmSync(path, { recursive: true });
   });
 
+  test("treats a name inherited from Object.prototype as an undefined mode", async () => {
+    const path = createTempConfig(`
+check:
+  - sequential:
+      - echo hello
+`);
+    for (const mode of ["constructor", "toString", "hasOwnProperty"]) {
+      // oxlint-disable-next-line no-await-in-loop
+      await expect(codesweep(mode, path)).rejects.toThrow(
+        `Mode "${mode}" is not defined in the config file (available: check)`,
+      );
+    }
+    expect(consoleErrorSpy).not.toHaveBeenCalled();
+    rmSync(path, { recursive: true });
+  });
+
+  test("names the failed commands when a parallel stage fails", async () => {
+    const path = createTempConfig(`
+check:
+  - parallel:
+      - sh -c 'exit 2'
+      - "true"
+      - sh -c 'exit 1'
+`);
+    const error = await codesweep("check", path).catch((error: unknown) => error);
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error instanceof Error ? error.message : "").toBe(
+      "Parallel execution failed:\nsh -c 'exit 2'\nsh -c 'exit 1'",
+    );
+    rmSync(path, { recursive: true });
+  });
+
   test("throws when a command fails", async () => {
     const path = createTempConfig(`
 check:

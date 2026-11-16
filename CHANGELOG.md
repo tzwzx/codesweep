@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- A mode name that the config file does not define, but that every JavaScript object has (such as `constructor` or `toString`), now fails with the usual `Mode "<name>" is not defined` error. Before, it started the pipeline and failed with `stages is not iterable`.
+- A failed parallel stage without `--quiet` now names the failed commands (`Parallel execution failed:` followed by one command per line), as quiet mode already did. Before, the summary was `Parallel execution failed: Unknown error`.
+
+### Changed
+
+- Updated the bundled `concurrently` dependency to 10.0.7, which flushes grouped output after a command fails to spawn.
+- README: fail-through applies within a stage. After a failed stage, later stages do not run. The quiet-mode failure example now shows the summary block.
+
 ## [1.2.6] - 2026-09-16
 
 ### Changed

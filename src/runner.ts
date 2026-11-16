@@ -1,7 +1,7 @@
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
 
-import { concurrently } from "concurrently";
+import { type CloseEvent, concurrently } from "concurrently";
 
 import type { RunOptions } from "./types.js";
 
@@ -87,6 +87,29 @@ const runParallelQuiet = async (commands: readonly string[]): Promise<void> => {
   }
 };
 
+// concurrently rejects with the close events of the commands that ran, not an Error.
+const isCloseEventList = (value: unknown): value is CloseEvent[] =>
+  Array.isArray(value) &&
+  value.every(
+    (event) =>
+      typeof event === "object" && event !== null && "command" in event && "exitCode" in event,
+  );
+
+/** Name the failed commands in command order, matching the quiet summary. */
+const describeParallelFailure = (error: unknown): string => {
+  if (isCloseEventList(error)) {
+    const failed = error
+      .filter((event) => event.exitCode !== 0)
+      .toSorted((first, second) => first.index - second.index)
+      .map((event) => event.command.command);
+    if (failed.length > 0) {
+      return `Parallel execution failed:\n${failed.join("\n")}`;
+    }
+  }
+  const message = error instanceof Error ? error.message : "Unknown error";
+  return `Parallel execution failed: ${message}`;
+};
+
 /**
  * Run commands in parallel (continues on failure).
  * All commands run even if one fails; the error is thrown after all complete.
@@ -110,7 +133,6 @@ export const runParallel = async (
   try {
     await result;
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    throw new Error(`Parallel execution failed: ${message}`, { cause: error });
+    throw new Error(describeParallelFailure(error), { cause: error });
   }
 };
